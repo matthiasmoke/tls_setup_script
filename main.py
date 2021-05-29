@@ -1,11 +1,10 @@
 import sys
 import getopt
 import os
-import OpenSSL.crypto as crypto
 import subprocess
 
 # default type is RSA
-KEY_TYPE = crypto.TYPE_RSA
+KEY_TYPE = "RSA"
 DESTINATION_FOLDER = os.path.abspath(os.path.join(os.getcwd(), "output"))
 CA_KEY_PATH = os.path.join(DESTINATION_FOLDER, "ca.pem")
 CA_CERT_PATH = os.path.join(DESTINATION_FOLDER, "ca.crt")
