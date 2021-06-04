@@ -193,7 +193,7 @@ def save_to_file(content, name, ending="txt"):
 
 def define_key_type():
     global KEY_TYPE
-    print("Which key type should be used? Possible options are:\n(1) RSA\n(2) EC\n(3) DSA\n(4) ECDH")
+    print("Which key type should be used? Possible options are:\n(1) RSA\n(2) EC(DSA)\n(3) DSA\n(4) ECDH")
     number = input("Select a number: ")
 
     if number == "1":
@@ -250,7 +250,7 @@ if __name__ == '__main__':
         interactive_setup()
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "cakey:cacert:c:s")
+        opts, args = getopt.getopt(sys.argv[1:], "cakey:cacert:c:s:h")
     except getopt.GetoptError as err:
         print(err)
         usage()
@@ -259,21 +259,21 @@ if __name__ == '__main__':
     server = False
     for o, a in opts:
 
-        if o in "-cakey":
+        if o == "-cakey":
             if len(a):
                 path = os.path.abspath(a)
                 if path.isfile(a) and (path.endswith(".pem") or path.endswith(".key")):
                     CA_KEY_PATH = path
 
-        elif o in "-cacert":
+        elif o == "-cacert":
             if len(a):
                 path = os.path.abspath(a)
                 if path.isfile(a) and (path.endswith(".pem") or path.endswith(".crt")):
                     CA_CERT_PATH = path
 
-        elif o in "s":
+        elif o in "-s":
             server = True
-        elif o in "c":
+        elif o in "-c":
             client = True
 
         elif o in "-h":
@@ -284,6 +284,8 @@ if __name__ == '__main__':
 
     if server:
         setup_sever()
+        cleanup()
     if client:
         setup_client()
+        cleanup()
 
