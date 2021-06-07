@@ -1,7 +1,7 @@
 import sys
-import getopt
 import os
 import subprocess
+import argparse
 
 # default type is RSA
 KEY_TYPE = "RSA"
@@ -90,10 +90,14 @@ def execute_commands(command_list):
 
 
 def setup_ca():
+    global CA_KEY_PATH, CA_CERT_PATH
     print("-------- Setup Certificate Authority --------")
     key_path = os.path.join(DESTINATION_FOLDER, "ca.pem")
     if create_key_pair(KEY_TYPE, "ca"):
         create_ca_certificate(key_path, "ca")
+
+        CA_KEY_PATH = key_path
+        CA_CERT_PATH = os.path.join(DESTINATION_FOLDER, "ca.crt")
 
 
 def setup_sever():
@@ -129,6 +133,7 @@ def init():
 
 def interactive_setup():
     print("Interactive Setup for Self Signed Certificate Generation")
+    print("This script can also be run with parameters. Use '-h' for more information")
     print("-------- CA Setup --------")
     define_key_type()
     setup_ca()
@@ -235,57 +240,41 @@ def define_curve():
     return curve
 
 
-def usage():
-    print("------------------- TLS KEYGEN -------------------")
-    print("Script parameters are given below. If none are given, the script is started in interactive mode")
-    print("-cakey       Define path of CA key for signing")
-    print("-cacert      Define path of CA cert for signing")
-    print("-c           Generate client key and cert. -ca option has to be specified!")
-    print("-s           Generate server key and cert. -ca option has to be specified!")
+def create_parser():
+    parser = argparse.ArgumentParser(prog="TLS KEYGEN",
+                                     description="Input parameters for certificate and key generation")
+    parser.add_argument("-a", action='store_true', help="Create a new certificate authority")
+    parser.add_argument("-c", action='store_true', help="Create client certificate and key. CA key and cert must be set!")
+    parser.add_argument("-s", action='store_true', help="Create server certificate and key. CA key and cert must be set!")
+    parser.add_argument("--cakey", help="Define key location of an already existing CA")
+    parser.add_argument("--cacert", help="Define certificate location of an already existing CA")
+
+    return parser
 
 
 if __name__ == '__main__':
     init()
     if not len(sys.argv[1:]):
         interactive_setup()
+    else:
+        arguments = create_parser().parse_args()
+        if arguments.cakey is not None:
+            path = os.path.abspath(arguments.cakey)
+            if os.path.isfile(path) and (path.endswith(".pem") or path.endswith(".key")):
+                CA_KEY_PATH = path
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "cakey:cacert:c:s:h")
-    except getopt.GetoptError as err:
-        print(err)
-        usage()
+        if arguments.cacert is not None:
+            path = os.path.abspath(arguments.cacert)
+            if os.path.isfile(path) and (path.endswith(".pem") or path.endswith(".crt")):
+                CA_CERT_PATH = path
 
-    client = False
-    server = False
-    for o, a in opts:
-
-        if o == "-cakey":
-            if len(a):
-                path = os.path.abspath(a)
-                if path.isfile(a) and (path.endswith(".pem") or path.endswith(".key")):
-                    CA_KEY_PATH = path
-
-        elif o == "-cacert":
-            if len(a):
-                path = os.path.abspath(a)
-                if path.isfile(a) and (path.endswith(".pem") or path.endswith(".crt")):
-                    CA_CERT_PATH = path
-
-        elif o in "-s":
-            server = True
-        elif o in "-c":
-            client = True
-
-        elif o in "-h":
-            usage()
-        else:
-            print("Error invalid input!")
-            usage()
-
-    if server:
-        setup_sever()
-        cleanup()
-    if client:
-        setup_client()
-        cleanup()
+        if arguments.a:
+            setup_ca()
+            cleanup()
+        if arguments.s:
+            setup_sever()
+            cleanup()
+        if arguments.c:
+            setup_client()
+            cleanup()
 
