@@ -238,15 +238,38 @@ def define_key_size():
 
 
 def define_curve():
-    print("Enter the curve that should be used")
-    print("(To see a list of possible values, run 'openssl list_curves')")
-    curve = input()
+    print("To see a list of possible values for curves, run 'openssl ecparam -list_curves' or run the script with option --curves")
+    curve = input("Enter the curve that should be used")
 
     if curve == "":
         curve = "prime256v1"
-        print(curve)
-    # TODO check if given curve is valid
-    return curve
+
+    available_curves = get_available_curves()
+
+    if curve in available_curves:
+        print("Selected curve: {}".format(curve))
+        return curve
+    else:
+        raise ValueError("Given curve invalid!")
+
+
+def list_curves():
+    print("These elliptic curves are available for EC key generation: \n")
+    execute_commands(["openssl ecparam -list_curves"])
+
+
+def get_available_curves():
+    command = "openssl ecparam -list_curves"
+    proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, )
+    output = proc.communicate()[0]
+    output_string = str(output)[2: len(str(output)) - 1]
+    lines = output_string.split("\\n")
+    curves = []
+    for line in lines:
+        split_strings = line.split(":")
+        curves.append(split_strings[0].replace(" ", ""))
+
+    return curves
 
 
 def create_parser():
@@ -257,6 +280,7 @@ def create_parser():
     parser.add_argument("-s", action='store_true', help="Create server certificate and key. CA key and cert must be set!")
     parser.add_argument("--cakey", help="Define key location of an already existing CA")
     parser.add_argument("--cacert", help="Define certificate location of an already existing CA")
+    parser.add_argument("--curves", action='store_true', help="Show a list of available elliptic curves")
 
     return parser
 
@@ -277,6 +301,9 @@ if __name__ == '__main__':
             path = os.path.abspath(arguments.cacert)
             if os.path.isfile(path) and (path.endswith(".pem") or path.endswith(".crt")):
                 CA_CERT_PATH = path
+
+        if arguments.curves is not None:
+            list_curves()
 
         if arguments.a:
             setup_ca()
