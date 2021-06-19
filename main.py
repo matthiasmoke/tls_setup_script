@@ -101,6 +101,7 @@ def execute_commands(command_list):
 def setup_ca():
     global CA_KEY_PATH, CA_CERT_PATH
     print("-------- Setup Certificate Authority --------")
+    define_key_type()
     key_path = os.path.join(DESTINATION_FOLDER, "ca.pem")
     if create_key_pair(KEY_TYPE, "ca"):
         create_ca_certificate(key_path, "ca")
@@ -111,6 +112,7 @@ def setup_ca():
 
 def setup_sever():
     print("-------- Setup Server/Broker --------")
+    define_key_type()
     key_path = os.path.join(DESTINATION_FOLDER, "server.pem")
     if create_key_pair(KEY_TYPE, "server"):
         create_ca_signed_certificate(key_path, "server", CA_KEY_PATH, CA_CERT_PATH, config_file="server.conf")
@@ -118,6 +120,7 @@ def setup_sever():
 
 def setup_client():
     print("-------- Setup Client --------")
+    define_key_type()
     key_path = os.path.join(DESTINATION_FOLDER, "client.pem")
     if create_key_pair(KEY_TYPE, "client"):
         create_ca_signed_certificate(key_path, "client", CA_KEY_PATH, CA_CERT_PATH, config_file="client.conf")
@@ -143,8 +146,6 @@ def init():
 def interactive_setup():
     print("Interactive Setup for Self Signed Certificate Generation")
     print("This script can also be run with parameters. Use '-h' for more information")
-    print("-------- CA Setup --------")
-    define_key_type()
     setup_ca()
 
     # print("Do you already have a CA and want to use it? (y/n)")
