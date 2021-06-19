@@ -10,6 +10,15 @@ CA_KEY_PATH = os.path.join(DESTINATION_FOLDER, "ca.pem")
 CA_CERT_PATH = os.path.join(DESTINATION_FOLDER, "ca.crt")
 
 
+def print_banner():
+    print(".___________. __          _______.    _______   __       _______..______    _______ .__   __.      _______. _______ .______      ")
+    print("|           ||  |        /       |   |       \ |  |     /       ||   _  \  |   ____||  \ |  |     /       ||   ____||   _  \\")
+    print("`---|  |----`|  |       |   (----`   |  .--.  ||  |    |   (----`|  |_)  | |  |__   |   \|  |    |   (----`|  |__   |  |_)  |")
+    print("    |  |     |  |        \   \       |  |  |  ||  |     \   \    |   ___/  |   __|  |  . `  |     \   \    |   __|  |      /  ")
+    print("    |  |     |  `----.----)   |      |  '--'  ||  | .----)   |   |  |      |  |____ |  |\   | .----)   |   |  |____ |  |\  \----.")
+    print("    |__|     |_______|_______/       |_______/ |__| |_______/    | _|      |_______||__| \__| |_______/    |_______|| _| `._____|")
+
+
 def create_key_pair(key_type, key_name):
     commands_to_exec = []
     bit_size = 2048
@@ -254,6 +263,7 @@ def create_parser():
 
 if __name__ == '__main__':
     init()
+    print_banner()
     if not len(sys.argv[1:]):
         interactive_setup()
     else:
