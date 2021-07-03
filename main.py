@@ -52,18 +52,22 @@ def create_key_pair(key_type, key_name):
     return True
 
 
-def create_ca_signed_certificate(path_to_key, cert_name, path_to_ca_key, path_to_ca_cert, config_file=None, valid_days=365):
+def create_ca_signed_certificate(path_to_key, cert_name, path_to_ca_key, path_to_ca_cert, config_file=None, extension_name=None):
     config_param = ""
+    extension_param = ""
     if config_file is not None:
         config_param = "-config {}".format(config_file)
+
+        if extension_name is not None:
+            extension_param = "-extensions {} -extfile {}".format(extension_name, config_file)
 
     output_file_csr = os.path.abspath(os.path.join(DESTINATION_FOLDER, "{}.csr".format(cert_name)))
     output_file_crt = os.path.abspath(os.path.join(DESTINATION_FOLDER, "{}.crt".format(cert_name)))
 
     try:
         commands_to_exec = ["openssl req -new -out {} -key {} {}".format(output_file_csr, path_to_key, config_param),
-                            "openssl x509 -req -in {} -CA {} -CAkey {} -CAcreateserial -out {} -days {}"
-                            .format(output_file_csr, path_to_ca_cert, path_to_ca_key, output_file_crt, valid_days)]
+                            "openssl x509 -req -in {} -CA {} -CAkey {} -CAcreateserial -out {} {}"
+                            .format(output_file_csr, path_to_ca_cert, path_to_ca_key, output_file_crt, extension_param)]
         execute_commands(commands_to_exec)
     except Exception as error:
         print("There was an error while creating the certificate")
@@ -76,7 +80,7 @@ def create_ca_certificate(path_to_key, cert_name, valid_days=365):
     output_file_crt = os.path.abspath(os.path.join(DESTINATION_FOLDER, "{}.crt".format(cert_name)))
 
     try:
-        command = "openssl req -new -x509 -days {} -key {} -config ca.conf -out {}"\
+        command = "openssl req -new -x509 -days {} -key {} -config ca.conf -extensions ca_ext -out {}"\
             .format(valid_days, path_to_key, output_file_crt)
         os.system(command)
     except Exception as error:
@@ -104,6 +108,7 @@ def setup_ca():
     define_key_type()
     key_path = os.path.join(DESTINATION_FOLDER, "ca.pem")
     if create_key_pair(KEY_TYPE, "ca"):
+        print("For more detailed parameter specification (i.e. req_extensions), have a look at the openssl configuration files.")
         create_ca_certificate(key_path, "ca")
 
         CA_KEY_PATH = key_path
@@ -115,7 +120,7 @@ def setup_sever():
     define_key_type()
     key_path = os.path.join(DESTINATION_FOLDER, "server.pem")
     if create_key_pair(KEY_TYPE, "server"):
-        create_ca_signed_certificate(key_path, "server", CA_KEY_PATH, CA_CERT_PATH, config_file="server.conf")
+        create_ca_signed_certificate(key_path, "server", CA_KEY_PATH, CA_CERT_PATH, config_file="server.conf", extension_name="server_ext")
 
 
 def setup_client():
@@ -123,7 +128,7 @@ def setup_client():
     define_key_type()
     key_path = os.path.join(DESTINATION_FOLDER, "client.pem")
     if create_key_pair(KEY_TYPE, "client"):
-        create_ca_signed_certificate(key_path, "client", CA_KEY_PATH, CA_CERT_PATH, config_file="client.conf")
+        create_ca_signed_certificate(key_path, "client", CA_KEY_PATH, CA_CERT_PATH, config_file="client.conf", extension_name="client_ext")
 
 
 def cleanup():
@@ -166,6 +171,7 @@ def interactive_setup():
     setup_sever()
     clear_console()
     setup_client()
+    cleanup()
 
     print("Do you want to save the fingerprint of the server certificate? (y/n)")
     if binary_question():
@@ -303,7 +309,7 @@ if __name__ == '__main__':
             if os.path.isfile(path) and (path.endswith(".pem") or path.endswith(".crt")):
                 CA_CERT_PATH = path
 
-        if arguments.curves is not None:
+        if arguments.curves:
             list_curves()
 
         if arguments.a:
