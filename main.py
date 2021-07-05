@@ -122,6 +122,11 @@ def setup_sever():
     if create_key_pair(KEY_TYPE, "server"):
         create_ca_signed_certificate(key_path, "server", CA_KEY_PATH, CA_CERT_PATH, config_file="server.conf", extension_name="server_ext")
 
+        print("Do you want to save the fingerprint of the server certificate? (y/n)")
+        if binary_question():
+            finger_print = get_fingerprint(os.path.join(DESTINATION_FOLDER, "server.crt"))
+            save_to_file(finger_print, "server_fingerprint")
+
 
 def setup_client():
     print("-------- Setup Client --------")
@@ -148,35 +153,21 @@ def init():
         os.mkdir(DESTINATION_FOLDER)
 
 
+def check_ca_paths():
+    if not os.path.exists(CA_KEY_PATH):
+        raise AttributeError("Specified path to CA key is invalid!")
+    elif not os.path.exists(CA_CERT_PATH):
+        raise AttributeError("Specified path to CA cert is invalid!")
+
+
 def interactive_setup():
     print("Interactive Setup for Self Signed Certificate Generation")
     print("This script can also be run with parameters. Use '-h' for more information")
     setup_ca()
-
-    # print("Do you already have a CA and want to use it? (y/n)")
-    # if binary_question():
-    #     print("Not implemented yet, sawry")
-    #     return
-    # else:
-    #     clear_console()
-    #     define_key_type()
-    #     print("-------- Define certificate information --------")
-    #     if setup_ca():
-    #         print("Successfully setup ca key and certificate")
-    #     else:
-    #         print("Error! Failed setting up CA")
-    #         return
-
     clear_console()
     setup_sever()
     clear_console()
     setup_client()
-    cleanup()
-
-    print("Do you want to save the fingerprint of the server certificate? (y/n)")
-    if binary_question():
-        finger_print = get_fingerprint(os.path.join(DESTINATION_FOLDER, "server.crt"))
-        save_to_file(finger_print, "server_fingerprint")
     cleanup()
 
 
@@ -214,7 +205,7 @@ def save_to_file(content, name, ending="txt"):
 
 def define_key_type():
     global KEY_TYPE
-    print("Which key type should be used? Possible options are:\n(1) RSA\n(2) EC(DSA)\n(3) DSA\n(4) ECDH")
+    print("Which key type should be used? Possible options are:\n(1) RSA\n(2) EC\n(3) DSA\n(4) ECDH")
     number = input("Select a number: ")
 
     if number == "1":
@@ -229,7 +220,7 @@ def define_key_type():
         print("Error! Invalid input. Try again")
         define_key_type()
 
-    print("{} set successfully as key type".format(str(KEY_TYPE)))
+    print("Successfully set {} as key type".format(str(KEY_TYPE)))
 
 
 def define_key_size():
@@ -238,7 +229,7 @@ def define_key_size():
     selection = input("Select one or press enter to use default: ")
     bit_size = 2048
 
-    if selection == 2:
+    if selection == "2":
         bit_size = 4096
 
     return bit_size
@@ -246,7 +237,7 @@ def define_key_size():
 
 def define_curve():
     print("To see a list of possible values for curves, run 'openssl ecparam -list_curves' or run the script with option --curves")
-    curve = input("Enter the curve that should be used")
+    curve = input("Enter the curve that should be used (default curve is 'prime256v1'): ")
 
     if curve == "":
         curve = "prime256v1"
@@ -257,7 +248,8 @@ def define_curve():
         print("Selected curve: {}".format(curve))
         return curve
     else:
-        raise ValueError("Given curve invalid!")
+        print("Given curve invalid! Try again")
+        define_curve()
 
 
 def list_curves():
@@ -316,9 +308,11 @@ if __name__ == '__main__':
             setup_ca()
             cleanup()
         if arguments.s:
+            check_ca_paths()
             setup_sever()
             cleanup()
         if arguments.c:
+            check_ca_paths()
             setup_client()
             cleanup()
 
