@@ -26,5 +26,6 @@ if __name__ == '__main__':
 
     average = (all_measures/measurement_count)
     standard_dev = statistics.stdev(measurements)
+    result_file.write("\nCount: {}".format(measurement_count))
     result_file.write("\nAverage: {}".format(average))
     result_file.write("\nStandard Deviation: {}".format(standard_dev))
