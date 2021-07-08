@@ -29,3 +29,6 @@ if __name__ == '__main__':
     result_file.write("\nCount: {}".format(measurement_count))
     result_file.write("\nAverage: {}".format(average))
     result_file.write("\nStandard Deviation: {}".format(standard_dev))
+    result_file.write("\nMin: {}".format(min(measurements)))
+    result_file.write("\nMax: {}".format(max(measurements)))
+

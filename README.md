@@ -41,11 +41,11 @@ Below is a snippet of the configuration, that contains the essential part for th
     password_file /home/pi/mqtt/p1.txt
 
     # Path to the CA certificate
-    cafile /home/pi/mqtt/ca.crt
+    cafile /path/to/file/ca.crt
     # Path to the PEM encoded server certificate.
-    certfile /home/pi/mqtt/server.crt
+    certfile /path/to/file/server.crt
     # Path to the PEM encoded keyfile.
-    keyfile /home/pi/mqtt/server.pem
+    keyfile /path/to/file/server.pem
 
     require_certificate true
 
@@ -66,6 +66,15 @@ To check which ciphers can be used, the
 
 can be run. The command output is also the format in which the list of ciphers has to be given in the Mosquitto configuration.
 
+### Create User File
+
+Create text file with following content:
+
+    testUser:1234
+
+Then run command:
+
+    mosquitto_passwd -U passwordfile
 
 ## Troubleshooting
 
