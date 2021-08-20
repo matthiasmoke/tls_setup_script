@@ -205,7 +205,7 @@ def save_to_file(content, name, ending="txt"):
 
 def define_key_type():
     global KEY_TYPE
-    print("Which key type should be used? Possible options are:\n(1) RSA\n(2) EC\n(3) DSA\n(4) ECDH")
+    print("Which key type should be used? Possible options are:\n(1) RSA\n(2) EC\n --- Experimental ---\n(3) DSA\n(4) ECDH")
     number = input("Select a number: ")
 
     if number == "1":
@@ -225,11 +225,13 @@ def define_key_type():
 
 def define_key_size():
     print("Which bit size should the key have?")
-    print("Possible options are:\n(1) 2048 (default)\n(2) 4096")
+    print("Possible options are:\n(1) 2048 (default)\n(2) 3072\n(3) 4096")
     selection = input("Select one or press enter to use default: ")
     bit_size = 2048
 
     if selection == "2":
+        bit_size = 3072
+    elif selection == "3":
         bit_size = 4096
 
     return bit_size
