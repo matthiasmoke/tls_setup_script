@@ -78,6 +78,6 @@ Then run command:
 
 ## Troubleshooting
 
-### OpenSSL error: X
+### OpenSSL Error[0]: error:1416F086:SSL routines:tls_process_server_certificate:certificate verify failed
 This error message occurs when both, server and CA, have the exact same certificate details in all possible attributes (Country, State, Locality, etc.). To prevent it, set different information in the certificate requests for server and CA. 
 In the standard configuration files given, different information for the entities are set, so it is unlikely to run into this problem.
